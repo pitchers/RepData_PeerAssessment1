@@ -20,20 +20,20 @@ complete <- data[complete.cases(data),]
 
 days <- split(complete, complete$date, drop=TRUE)
 
-stepsPerDay <- sapply(days, function(day) { return (sum(day$steps)) } )
+totalStepsPerDay <- sapply(days, function(day) { return (sum(day$steps)) } )
 ```
 
 ```{r hist}
-hist(stepsPerDay,
+hist(totalStepsPerDay,
      main="Total steps per day",
      xlab="Steps")
 ```
 
 ## What is mean total number of steps taken per day?
 The mean total number of steps taken per day is
-`r as.integer(mean(stepsPerDay))`.
+`r as.integer(mean(totalStepsPerDay))`.
 The median total number of steps taken per day is
-`r as.integer(median(stepsPerDay))`.
+`r as.integer(median(totalStepsPerDay))`.
 
 
 ## What is the average daily activity pattern?
@@ -41,26 +41,73 @@ The median total number of steps taken per day is
 ```{r daily activity pattern}
 intervals <- split(complete, complete$interval)
 
-stepsPerInterval <- sapply(intervals, function(i) { return (mean(i$steps)) } )
+meanStepsPerInterval <- sapply(intervals, function(i) { return (mean(i$steps)) } )
 ```
 
 
 ```{r plot}
-plot(stepsPerInterval,
+plot(meanStepsPerInterval,
      type="l",
      main="Daily Activity Pattern",
      ylab="Steps",
      xlab="Interval")
 
-highestInterval = which.max(stepsPerInterval)
-highestValue = stepsPerInterval[highestInterval]
+highestInterval = which.max(meanStepsPerInterval)
+highestValue = meanStepsPerInterval[highestInterval]
 ```
 
 
 The highest mean number of steps (of value `r highestValue`) occurs at five-minute interval `r highestInterval`.
 
 ## Inputing missing values
+The total number of rows with missing values is
+`r nrow(data) - nrow(complete)`.
 
+```{r replaceMissing}
+# Estimate the missing values
+estimData = data
+for (r in 1:nrow(estimData)) {
+  if (is.na(estimData[r, 'steps'])) {
+    interval = estimData[r, 'interval']
+    index = which(names(meanStepsPerInterval) == as.character(interval))
+    replacement = meanStepsPerInterval[index]
+    estimData[r, 'steps'] = replacement
+  }
+}
+```
 
+```{r estimDays}
+estimDays <- split(estimData, estimData$date, drop=TRUE)
+
+estimTotalStepsPerDay <- sapply(estimDays, function(day) { return (sum(day$steps)) } )
+```
+
+```{r estimHist}
+hist(estimTotalStepsPerDay,
+     main="Total steps per day (with missing values estimated)",
+     xlab="Steps")
+```
+
+With missing values filled in with estimates,
+the mean total number of steps taken per day is
+`r as.integer(mean(estimTotalStepsPerDay))`.
+and the median total number of steps taken per day is
+`r as.integer(median(estimTotalStepsPerDay))`.
+
+```{r impact}
+# What is the impact of adding estimates for the missing data?
+# Returns: the percentage difference (roughly speaking)
+Impact <- function (before, after) {
+  return (200 * (before - after) / (before + after))
+}
+
+impactMean = Impact(mean(totalStepsPerDay), mean(estimTotalStepsPerDay))
+
+impactMedian = Impact(median(totalStepsPerDay), median(estimTotalStepsPerDay))
+```
+
+The mean   changed by `r impactMean` percent.
+The meidan changed by `r impactMedian` percent.
+So we conclude that estimating the missing values did not significantly affect the results.
 
 ## Are there differences in activity patterns between weekdays and weekends?
