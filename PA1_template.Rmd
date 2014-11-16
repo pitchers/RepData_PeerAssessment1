@@ -56,7 +56,6 @@ highestInterval = which.max(meanStepsPerInterval)
 highestValue = meanStepsPerInterval[highestInterval]
 ```
 
-
 The highest mean number of steps (of value `r highestValue`) occurs at five-minute interval `r highestInterval`.
 
 ## Inputing missing values
@@ -111,3 +110,35 @@ The meidan changed by `r impactMedian` percent.
 So we conclude that estimating the missing values did not significantly affect the results.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekends}
+estimData$we <- factor( weekdays(as.Date(estimData$date)) %in% c("Saturday", "Sunday"), labels=c("weekday", "weekend") )
+```
+
+```{r plotWe}
+estimWeData = estimData[estimData$we=="weekend", ]
+estimWeIntervals <- split(estimWeData, estimWeData$interval)
+
+meanWeekend <- sapply(estimWeIntervals, function(i) { return (mean(i$steps)) } )
+
+estimWdData = estimData[estimData$we=="weekday", ]
+estimWdIntervals <- split(estimWdData, estimWdData$interval)
+
+meanWeekday <- sapply(estimWdIntervals, function(i) { return (mean(i$steps)) } )
+
+combined = data.frame(average=meanWeekend, interval=names(meanWeekend), we=as.factor("weekend"))
+combined = rbind(combined, data.frame(average=meanWeekday, interval=names(meanWeekday), we=as.factor("weekday")))
+
+##ord = combined[order(as.integer(as.character(combined$interval))), ]
+
+library(lattice)
+xyplot(average ~ as.integer(as.character(interval)) | we,
+       data=combined,
+       type="l",
+       layout=c(1,2),
+       main="Activity pattern, comparing weekday with weekend",
+       ylab="Average number of steps taken",
+       xlab="Interval")
+```
+
+
