@@ -5,16 +5,19 @@ output:
     keep_md: true
 ---
 
+
+
 ## Loading and preprocessing the data
-
-
-## What is mean total number of steps taken per day?
 
 ```r
 data <- read.csv("activity/activity.csv")
 
 complete <- data[complete.cases(data),]
+```
 
+## What is mean total number of steps taken per day?
+
+```r
 days <- split(complete, complete$date, drop=TRUE)
 
 totalStepsPerDay <- sapply(days, function(day) { return (sum(day$steps)) } )
@@ -75,8 +78,10 @@ estimData = data
 for (r in 1:nrow(estimData)) {
   if (is.na(estimData[r, 'steps'])) {
     interval = estimData[r, 'interval']
+    # look up the mean value for that interval
     index = which(names(meanStepsPerInterval) == as.character(interval))
     replacement = meanStepsPerInterval[index]
+    # replace the missing value with the mean for that interval
     estimData[r, 'steps'] = replacement
   }
 }
@@ -100,7 +105,7 @@ hist(estimTotalStepsPerDay,
 
 With missing values filled in with estimates,
 the mean total number of steps taken per day is
-10766.
+10766,
 and the median total number of steps taken per day is
 10766.
 
@@ -143,14 +148,13 @@ meanWeekday <- sapply(estimWdIntervals, function(i) { return (mean(i$steps)) } )
 combined = data.frame(average=meanWeekend, interval=names(meanWeekend), we=as.factor("weekend"))
 combined = rbind(combined, data.frame(average=meanWeekday, interval=names(meanWeekday), we=as.factor("weekday")))
 
-##ord = combined[order(as.integer(as.character(combined$interval))), ]
 
 library(lattice)
 xyplot(average ~ as.integer(as.character(interval)) | we,
        data=combined,
        type="l",
        layout=c(1,2),
-       main="Average number of steps taken, comparing weekday with weekend",
+       main="Activity pattern, comparing weekday with weekend",
        ylab="Average number of steps taken",
        xlab="Interval")
 ```

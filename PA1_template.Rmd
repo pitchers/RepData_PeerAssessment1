@@ -5,19 +5,21 @@ output:
     keep_md: true
 ---
 
-## Loading and preprocessing the data
 ```{r interactive,echo=FALSE}
 # setwd("/Data/CLASSHW/coursera/DataScienceSpecialization/05_repdata-008-hws/peer01/RepData_PeerAssessment1")
 # library(knitr)
 # knit2html("PA1_template.Rmd"); browseURL("PA1_template.html")
 ```
 
-## What is mean total number of steps taken per day?
-```{r totals and means}
+## Loading and preprocessing the data
+```{r loading}
 data <- read.csv("activity/activity.csv")
 
 complete <- data[complete.cases(data),]
+```
 
+## What is mean total number of steps taken per day?
+```{r averaging}
 days <- split(complete, complete$date, drop=TRUE)
 
 totalStepsPerDay <- sapply(days, function(day) { return (sum(day$steps)) } )
@@ -68,8 +70,10 @@ estimData = data
 for (r in 1:nrow(estimData)) {
   if (is.na(estimData[r, 'steps'])) {
     interval = estimData[r, 'interval']
+    # look up the mean value for that interval
     index = which(names(meanStepsPerInterval) == as.character(interval))
     replacement = meanStepsPerInterval[index]
+    # replace the missing value with the mean for that interval
     estimData[r, 'steps'] = replacement
   }
 }
@@ -89,7 +93,7 @@ hist(estimTotalStepsPerDay,
 
 With missing values filled in with estimates,
 the mean total number of steps taken per day is
-`r as.integer(mean(estimTotalStepsPerDay))`.
+`r as.integer(mean(estimTotalStepsPerDay))`,
 and the median total number of steps taken per day is
 `r as.integer(median(estimTotalStepsPerDay))`.
 
@@ -129,7 +133,6 @@ meanWeekday <- sapply(estimWdIntervals, function(i) { return (mean(i$steps)) } )
 combined = data.frame(average=meanWeekend, interval=names(meanWeekend), we=as.factor("weekend"))
 combined = rbind(combined, data.frame(average=meanWeekday, interval=names(meanWeekday), we=as.factor("weekday")))
 
-##ord = combined[order(as.integer(as.character(combined$interval))), ]
 
 library(lattice)
 xyplot(average ~ as.integer(as.character(interval)) | we,
